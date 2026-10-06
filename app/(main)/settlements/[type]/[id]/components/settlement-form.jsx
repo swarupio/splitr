@@ -88,7 +88,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     try {
       // Get the selected user from the group balances
       const selectedUser = entityData.balances.find(
-        (balance) => balance.userId === selectedUserId
+        (balance) => balance.userId === selectedUserId,
       );
 
       if (!selectedUser) {
@@ -335,7 +335,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                         You paid{" "}
                         {
                           groupMembers.find(
-                            (m) => m.userId === selectedGroupMemberId
+                            (m) => m.userId === selectedGroupMemberId,
                           )?.name
                         }
                       </span>
@@ -354,7 +354,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                         <AvatarImage
                           src={
                             groupMembers.find(
-                              (m) => m.userId === selectedGroupMemberId
+                              (m) => m.userId === selectedGroupMemberId,
                             )?.imageUrl
                           }
                         />
@@ -367,7 +367,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                       <span>
                         {
                           groupMembers.find(
-                            (m) => m.userId === selectedGroupMemberId
+                            (m) => m.userId === selectedGroupMemberId,
                           )?.name
                         }{" "}
                         paid you

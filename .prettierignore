@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+build/
+coverage/
+playwright-report/
+test-results/
+convex/_generated/
+package-lock.json
+.env*
+.clerk/
+.agents/
+.codex/
+legacy/
+archive/

@@ -26,6 +26,7 @@ No credential, request body, header, or provider error is logged by the new brid
 
 Convex's WebCrypto HMAC implementation delegates verification to aws-lc-rs::hmac::verify, whose documentation
 specifies constant-time verification:
+
 - https://raw.githubusercontent.com/get-convex/convex-backend/main/crates/webcrypto/src/hmac.rs
 - https://docs.rs/aws-lc-rs/latest/aws_lc_rs/hmac/fn.verify.html
 
@@ -34,6 +35,7 @@ This is source verification of the published runtime implementation, not a timin
 ## Email dependency report
 
 No UI calls sendEmail. Two existing scheduled jobs do:
+
 - lib/inngest/payment-reminders.js: daily payment-reminder email.
 - lib/inngest/spending-insights.js: monthly Gemini spending-insights email.
 
@@ -63,19 +65,19 @@ not remove or redesign the existing scheduled jobs.
 No existing .env* file was inspected. No real values were written. Presence of your configured credentials
 was accepted from your instruction, not checked by reading settings or values.
 
-| Variable | Code/consumer | Location | Client-exposed? | Needed? |
-| --- | --- | --- | --- | --- |
-| NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY | app/layout.js | Vercel/local | Yes, intentionally public | Core auth |
-| NEXT_PUBLIC_CONVEX_URL | components/convex-client-provider.jsx | Vercel/local | Yes, public deployment URL | Core data |
-| CONVEX_HTTP_URL | lib/inngest/bridge.ts | Vercel/local | No; server-only | Background bridge HTTP-action URL (.convex.site) |
-| CLERK_JWT_ISSUER_DOMAIN | convex/auth.config.js | Convex | No | Core Clerk/Convex auth |
-| INNGEST_BRIDGE_SECRET | convex/lib/bridge_auth.ts; lib/inngest/bridge.ts | Convex and Vercel/local | No; server-only guard | Background bridge |
-| GEMINI_API_KEY | lib/inngest/spending-insights.js | Vercel/local | No; API-route import graph only | Optional legacy insights |
-| RESEND_API_KEY | convex/email.ts | Convex only | No; not accepted in bridge payloads | Required for email sending; configured in dev per user |
-| CLERK_SECRET_KEY | Clerk SDK, implicit | Vercel/local | No | Core server auth |
-| INNGEST_SIGNING_KEY | Inngest serve SDK, implicit | Vercel/local | No | Production Inngest requests |
-| INNGEST_EVENT_KEY | Inngest SDK, implicit | Vercel/local | No | Optional; app does not publish events |
-| CONVEX_DEPLOYMENT | Convex CLI | Local tooling | No | Local CLI deployment selection |
+| Variable                          | Code/consumer                                    | Location                | Client-exposed?                     | Needed?                                                |
+| --------------------------------- | ------------------------------------------------ | ----------------------- | ----------------------------------- | ------------------------------------------------------ |
+| NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY | app/layout.js                                    | Vercel/local            | Yes, intentionally public           | Core auth                                              |
+| NEXT_PUBLIC_CONVEX_URL            | components/convex-client-provider.jsx            | Vercel/local            | Yes, public deployment URL          | Core data                                              |
+| CONVEX_HTTP_URL                   | lib/inngest/bridge.ts                            | Vercel/local            | No; server-only                     | Background bridge HTTP-action URL (.convex.site)       |
+| CLERK_JWT_ISSUER_DOMAIN           | convex/auth.config.js                            | Convex                  | No                                  | Core Clerk/Convex auth                                 |
+| INNGEST_BRIDGE_SECRET             | convex/lib/bridge_auth.ts; lib/inngest/bridge.ts | Convex and Vercel/local | No; server-only guard               | Background bridge                                      |
+| GEMINI_API_KEY                    | lib/inngest/spending-insights.js                 | Vercel/local            | No; API-route import graph only     | Optional legacy insights                               |
+| RESEND_API_KEY                    | convex/email.ts                                  | Convex only             | No; not accepted in bridge payloads | Required for email sending; configured in dev per user |
+| CLERK_SECRET_KEY                  | Clerk SDK, implicit                              | Vercel/local            | No                                  | Core server auth                                       |
+| INNGEST_SIGNING_KEY               | Inngest serve SDK, implicit                      | Vercel/local            | No                                  | Production Inngest requests                            |
+| INNGEST_EVENT_KEY                 | Inngest SDK, implicit                            | Vercel/local            | No                                  | Optional; app does not publish events                  |
+| CONVEX_DEPLOYMENT                 | Convex CLI                                       | Local tooling           | No                                  | Local CLI deployment selection                         |
 
 Only the two NEXT_PUBLIC variables above are intentionally included in client code.
 The report covers direct application reads and relevant standard SDK/tooling configuration, not every optional
@@ -221,7 +223,7 @@ api.d.ts removal of the seed entry. No commits were amended and this checkpoint 
    CLI identity simulation verifies the deployed handler; browser checks verify actual Clerk auth.
    If exercising deleted-user references, use disposable fixtures only; do not delete live users.
 
-No product or schema decision is needed for this checkpoint. Commits 7–11, real build/Playwright,
+No product or schema decision is needed for this checkpoint. Commits 7ï¿½11, real build/Playwright,
 broader authorization fixes and integer-money migration remain outside this approved scope.
 Review these four new commits before pushing or continuing.
 
@@ -242,3 +244,17 @@ unreachable GroupSelector loading branch; SettlementList debug logging of paymen
 The active Sonner toaster and legacy GoogleGenerativeAI job remain. Clerk dependencies that are
 still needed transitively remain installed. Assets with uncertain external use remain untouched.
 No Convex function was added or removed, and no generated files were staged.
+
+## Commit 8: complete tooling
+
+Added development-only Prettier, fast-check and @playwright/test: the existing stack had no
+formatter, property generator or browser-test runner. Added Prettier configuration and explicit-path
+format/format:check scripts. Only files touched by this session were formatted; no repo-wide rewrite.
+Ignored environment files and local config in formatter input.
+Two property tests call the actual expense mutation for 100 seeded examples each:
+personal caller involvement and group caller/payer/all-participant membership, checking stored
+caller identity on success and no expense writes on denial.
+Added one public landing-page Playwright smoke spec, run in Chromium at 360px and desktop.
+It checks status, title, heading, CTA and anchor navigation using dummy configuration.
+It does not verify real Clerk/Convex connectivity.
+README now documents npm-only commands, the deliberate two-terminal dev setup and incremental formatting.

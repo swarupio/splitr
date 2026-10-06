@@ -19,7 +19,7 @@ export function GroupSelector({ onChange }) {
   // Single query to get all data we need
   const { data, isLoading } = useConvexQuery(
     api.groups.getGroupOrMembers,
-    selectedGroupId ? { groupId: selectedGroupId } : {}
+    selectedGroupId ? { groupId: selectedGroupId } : {},
   );
 
   // When group data changes, notify parent
@@ -67,8 +67,6 @@ export function GroupSelector({ onChange }) {
           ))}
         </SelectContent>
       </Select>
-
-
     </div>
   );
 }

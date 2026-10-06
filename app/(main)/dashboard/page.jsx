@@ -19,15 +19,15 @@ import { GroupList } from "./components/group-list";
 
 export default function Dashboard() {
   const { data: balances, isLoading: balancesLoading } = useConvexQuery(
-    api.dashboard.getUserBalances
+    api.dashboard.getUserBalances,
   );
 
   const { data: groups, isLoading: groupsLoading } = useConvexQuery(
-    api.dashboard.getUserGroups
+    api.dashboard.getUserGroups,
   );
 
   const { data: totalSpent, isLoading: totalSpentLoading } = useConvexQuery(
-    api.dashboard.getTotalSpent
+    api.dashboard.getTotalSpent,
   );
 
   const { data: monthlySpending, isLoading: monthlySpendingLoading } =

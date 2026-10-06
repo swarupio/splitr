@@ -29,7 +29,7 @@ export function ParticipantSelector({ participants, onParticipantsChange }) {
   // Search for users
   const { data: searchResults, isLoading } = useConvexQuery(
     api.users.searchUsers,
-    { query: searchQuery }
+    { query: searchQuery },
   );
 
   // Add a participant

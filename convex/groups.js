@@ -13,13 +13,13 @@ export const getGroupOrMembers = query({
     // Get all groups where the user is a member
     const allGroups = await ctx.db.query("groups").collect();
     const userGroups = allGroups.filter((group) =>
-      group.members.some((member) => member.userId === currentUser._id)
+      group.members.some((member) => member.userId === currentUser._id),
     );
 
     // If a specific group ID is provided, only return details for that group
     if (args.groupId) {
       const selectedGroup = userGroups.find(
-        (group) => group._id === args.groupId
+        (group) => group._id === args.groupId,
       );
 
       if (!selectedGroup) {
@@ -39,7 +39,7 @@ export const getGroupOrMembers = query({
             imageUrl: user.imageUrl,
             role: member.role,
           };
-        })
+        }),
       );
 
       // Filter out any null values (in case a user was deleted)
@@ -104,7 +104,7 @@ export const getGroupExpenses = query({
       group.members.map(async (m) => {
         const u = await ctx.db.get(m.userId);
         return { id: u._id, name: u.name, imageUrl: u.imageUrl, role: m.role };
-      })
+      }),
     );
     const ids = memberDetails.map((m) => m.id);
 

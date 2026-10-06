@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Splitr
 
-## Getting Started
+Shared expenses with friends. The existing app is being upgraded in place; product requirements
+are in docs/PRD.md and the phase plan is in docs/UPGRADE_PLAN.md.
 
-First, run the development server:
+## Local development
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Use Node.js 24 and npm. Install with npm ci. Set the documented variables from .env.example
+in your local Next configuration and Convex dashboard; never commit real values.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Use two terminals, with the same Convex deployment configured on both sides:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. Run npm run dev for Next.js at http://localhost:3000.
+2. Run npx convex dev for Convex function/schema publishing and watching.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This is the deliberate two-terminal alternative to a process-supervisor dependency.
+Do not start a second Convex watcher if one is already running.
 
-## Learn More
+## Verification
 
-To learn more about Next.js, take a look at the following resources:
+- npm run lint: ESLint.
+- npm run typecheck: strict TypeScript for new code; legacy JavaScript remains in allowJs mode.
+- npm test: Vitest, including 200 generated expense-authorization examples.
+- npm run check: lint, typecheck and Vitest.
+- npm run build: production Next.js build.
+- npx playwright install chromium: install the smoke-test browser.
+- npm run test:e2e: one public-page smoke spec at 360px and desktop; run npm run build first.
+  Playwright starts and stops a separate production Next server on port 3100 with dummy settings.
+  The smoke test does not exercise live Clerk login, Convex data or email jobs.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Formatting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Formatting is incremental. Both scripts require explicit paths, so they cannot accidentally
+reformat the whole legacy repo:
 
-## Deploy on Vercel
+npm run format -- package.json playwright.config.ts e2e/public-page.spec.ts
+npm run format:check -- package.json playwright.config.ts e2e/public-page.spec.ts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Use these commands only for files you touch. Generated files, environment files, local config
+and test output are ignored. No whole-repo formatting pass was performed.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See docs/PHASE_B_REVIEW.md for deployment variables, CI build prerequisites and manual checks.
