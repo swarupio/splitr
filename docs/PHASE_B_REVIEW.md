@@ -331,7 +331,7 @@ the current onboarding@resend.dev sender is restricted and was not changed in th
 6. Apply the production settings above when deploying, then perform the real Clerk/Convex,
    bridge authentication and expense-denial checks in the earlier manual section.
 7. Stop here. Next.js advisory evaluation/15.5-only patch and the selected-pair settlement
-   reproduction/fix are commits 10-11 and have not been started.
+   reproduction/fix were deferred at that checkpoint; their results now appear below.
 
 The initial smoke verification found two test-configuration issues: Clerk rewrites to localhost,
 so the server and browser now both use localhost; test-shaped Clerk keys force a development-browser
@@ -357,7 +357,7 @@ example.test host and placeholder secret. No production middleware/auth logic wa
   Clerk, Inngest, AI or email operation was invoked. No environment-file contents were read.
 - Existing Convex auth.config.js still has one lint warning and no lint errors.
 - GitHub Actions itself remains unverified until the reviewed commits are pushed and a PR runs.
-  This checkpoint is local/unpushed. Commits 10-11 are deliberately deferred for review.
+  Commits 1-9 have since been reviewed and pushed; the current checkpoint is commits 10-11.
 
 ## Commit 10: conditional Next.js security patch
 
@@ -378,3 +378,55 @@ Next 15.5.27; the existing reactCompiler and temporary-copy workspace-root warni
 The public-page smoke spec passed both Chromium runs (360x800 and 1280x800).
 The required post-commit check uses the same suite. No Convex functions were added or
 removed, and no generated bindings are staged.
+
+## Commit 11: selected-pair settlement correction
+
+The new regression was run before editing production code: two cases failed with
+20 instead of 50, for both A viewing B and B viewing A after A paid C 30. Five
+control cases already passed. After the fix, all seven pass.
+
+Only the settlement application loop inside getSettlementData changed: subtract
+a personal payment only if payer and receiver are the two selected users, in the
+corresponding direction. Existing arithmetic, clamps, expense calculation, group
+branch and schema remain unchanged. This narrow legacy JavaScript edit follows
+the explicit function-only scope; no helper/function or generated binding was added.
+
+Seven new unit cases cover both views of the third-party regression, both views
+of a valid A-to-B payment (50 becomes 20), both views of group-payment isolation,
+and anonymous rejection of the registered public query. For authenticated balance
+cases, convex-test does not propagate identity into the nested runQuery; the test
+resolves only that caller lookup through the real requireUser helper and executes
+the actual handler with the real emulator database/indexes. Runtime integration
+therefore still needs the manual checks below.
+
+npm run check passes with 116 tests across eleven files (seven added), plus the
+existing one lint warning in auth.config.js. Post-commit checks are required for
+all three new commits. The security patch also passed its production build and
+one smoke spec at two Chromium viewports. No new browser tests were added.
+
+## Manual verification for commits 10-11
+
+1. In a second terminal, run npx convex dev against your development deployment.
+   Confirm functions publish successfully, including the updated settlements module,
+   with no module-path, schema or runtime error. Generated bindings are not part of
+   these commits; inspect their local watcher changes separately.
+2. Run npm run dev and verify the public landing/sign-in pages at 360px and desktop.
+   Signed out, check dashboard, contacts and nested protected routes redirect to
+   sign-in; signed in, check they load normally. Verify a dynamic group/person/
+   settlement page also loads with your real Clerk/Convex configuration.
+3. Using disposable development users A, B and C, create a personal expense paid
+   by B with an unpaid A split of 50. Record a personal A-to-C payment of 30.
+   As A, open /settlements/user/<B-id>: it must show owing 50. As B, open
+   /settlements/user/<A-id>: it must show owed 50. Refresh each page.
+4. Record a personal A-to-B payment of 30. The same pages must now show 20
+   in the corresponding direction. On a separate clean personal fixture, confirm
+   a group-scoped payment does not alter the personal balance. Confirm an existing
+   group settlement page still renders its previous balances and payment form.
+5. With your configured environment, run npm run build then npm run test:e2e.
+   Confirm the production build and both smoke viewport runs. After review/push,
+   confirm the PR CI checks; local dummy verification does not establish live
+   Clerk/Convex integration or prove an exploit reproduction.
+
+All work stops at this checkpoint. No Phase D schema, settlement status/sign,
+clamping or money-engine changes are included. No decision is required to implement
+these two scoped fixes; review and approval are the next step.

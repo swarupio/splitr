@@ -138,10 +138,16 @@ export const getSettlementData = query({
       const settlements = [...mySettlements, ...otherUserSettlements];
 
       for (const st of settlements) {
-        if (st.paidByUserId === me._id) {
+        if (
+          st.paidByUserId === me._id &&
+          st.receivedByUserId === other._id
+        ) {
           // I paid them ⇒ my owing goes down
           owing = Math.max(0, owing - st.amount);
-        } else {
+        } else if (
+          st.paidByUserId === other._id &&
+          st.receivedByUserId === me._id
+        ) {
           // They paid me ⇒ their owing goes down
           owed = Math.max(0, owed - st.amount);
         }
