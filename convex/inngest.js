@@ -1,9 +1,9 @@
-import { query } from "./_generated/server";
+import { internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 
 // 1‑to‑1 debts netted against cases where the user
 // was the payer and against settlements already made.
-export const getUsersWithOutstandingDebts = query({
+export const getUsersWithOutstandingDebts = internalQuery({
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
     const result = [];
@@ -102,8 +102,6 @@ export const getUsersWithOutstandingDebts = query({
         }
       }
 
-      console.log(user.name, debts);
-
       if (debts.length) {
         result.push({
           _id: user._id,
@@ -119,7 +117,7 @@ export const getUsersWithOutstandingDebts = query({
 });
 
 // Get users with expenses for AI insights
-export const getUsersWithExpenses = query({
+export const getUsersWithExpenses = internalQuery({
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
     const result = [];
@@ -166,7 +164,7 @@ export const getUsersWithExpenses = query({
 });
 
 // Get a specific user's expenses for the past month
-export const getUserMonthlyExpenses = query({
+export const getUserMonthlyExpenses = internalQuery({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     // Get current month start
