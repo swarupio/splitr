@@ -112,7 +112,7 @@ Build, Playwright, live deployment and dashboard configuration are deferred to l
 The public seed, middleware defects and expense participant authorization are still pending commits 4â€“6.
 UI, schema, React 18 and money calculations were preserved.
 
-Checkpoint validation: npm run check passed with 52 tests across five test files.
+Earlier checkpoint validation: npm run check passed with 52 tests across five test files.
 
 ## Bridge URL follow-up (before commit 4)
 
@@ -151,3 +151,76 @@ The landing, sign-in and sign-up pages must remain accessible. Sign in and confi
 contacts load normally, then open a valid nested group route. Repeat at 360px and desktop.
 Nested dashboard/contacts example paths have no pages today; after sign-in they may correctly show 404.
 The tests mock authentication, so real Clerk cookie handling and return navigation still need this check.
+
+## Commit 6: expense creation authorization
+
+expenses:createExpense remains the same public mutation. Its definition now lives in
+convex/lib/expense_creation.ts as a plain exported object, consumed by the existing registration
+in expenses.js; the old implementation was removed. No function is added, removed or renamed
+in this commit, so no generated bindings are staged.
+The new TypeScript implementation calls requireUser or requireMember directly.
+Personal expenses must include the caller as payer or in splits. Payer and every participant must
+have an existing users record, including when stale embedded group membership still references
+a deleted user. For group expenses all parties must be in the group's embedded members array.
+A group member may still organize an expense for other members without paying or participating.
+
+19 new mutation tests: two authentication failures, 11 authorization/existence failures,
+four valid caller-role cases, and two existing money-tolerance cases. Every rejection checks
+that no expense was written. The original registration was exercised before the fix and failed;
+the mock's nested runQuery path also failed to preserve synthetic auth, so that initial run
+alone does not demonstrate successful debt forgery on a deployed backend.
+The money validation and insert block were compared verbatim with the previous commit.
+No calculations, validators, schema, existing expenses or other function implementations changed.
+
+## Current checkpoint validation
+
+Post-commit npm run check totals: bridge follow-up 55, commit 4 57, commit 5 88, commit 6 107.
+Nine test files now run; 54 cases were added from this session's 53-case baseline:
+two bridge client cases, two seed cases, 31 middleware cases and 19 expense cases.
+All checks include lint, strict TypeScript and Vitest. The existing auth.config.js lint warning remains.
+No dependency additions, live backend calls, environment reads, secret inspection, browser test,
+email delivery or AI requests were performed. Tests use synthetic data and mocked requests.
+Existing generated-file line-ending noise is left unstaged. During this session api.d.ts also
+gained the plain expense_creation helper module entry in the working tree; that is left unstaged
+under the no-function-change rule for commit 6. Only commit 4 includes the regenerated
+api.d.ts removal of the seed entry. No commits were amended and this checkpoint is not pushed.
+
+## Manual runtime verification after review
+
+1. Set server-only CONVEX_HTTP_URL locally and in the matching Vercel environment to the exact
+   HTTP Actions URL copied from the target Convex dashboard (HTTPS .convex.site).
+   Keep NEXT_PUBLIC_CONVEX_URL as its separate .convex.cloud client URL.
+   Both must refer to the intended same deployment, and the bridge secret must match on both sides.
+   Restart Next/Inngest after changing server configuration.
+2. Run npx convex dev on phase-b/safety-net and wait for successful function publication.
+   Confirm convex/lib/expense_creation.ts passes real bundling with no path/type errors.
+   Normal CLI codegen may add the plain helper module to api.d.ts; review that separately.
+   Then run npx convex run seed:seedDatabase '{}': it must fail with function not found.
+   Confirm the deployed Functions list has no seed mutation.
+3. Use a secure HTTP client to POST to CONVEX_HTTP_URL/inngest-bridge with
+   {"operation":"outstandingDebts"}. Without a bearer credential and with a wrong one expect
+   401; with the correct bridge credential expect 200 and the validated array response.
+   Verify the Next-side bridge client/job's data-fetch step reaches this same deployment.
+   Do not activate the email step merely to test routing: existing jobs still send real emails.
+   A public/client call to the internal Inngest queries or email action must remain unavailable.
+4. Run npm run dev, then perform the signed-out and signed-in browser checks listed under commit 5.
+   At 360px and desktop, save a normal personal expense with yourself as payer, another with
+   yourself as participant, and a group expense with only group members. Confirm balances and
+   supplied split amounts behave as before.
+5. For adversarial expense checks, use disposable dev accounts A/B/C and a group containing A/B.
+   The browser UI may prevent invalid choices before submission, so also use the Convex dev
+   function runner/CLI with synthetic arguments. The installed CLI supports:
+   npx convex run expenses:createExpense '<expense JSON>' --identity '<identity JSON>'
+   The identity JSON must use the matching dev user's tokenIdentifier; omit --identity to test
+   anonymous rejection. Arguments keep the legacy shape:
+   description, amount, date, paidByUserId, splitType, splits [{userId,amount,paid}], optional groupId.
+   For example, use amount 10 and one split of amount 10; substitute actual dev document IDs.
+   As A, personal B-paid/C-split must reject; group C-paid/B-split and B-paid/C-split must reject.
+   As C, any A/B group expense must reject. As A, personal A-paid/B-split and B-paid/A-split,
+   and group B-paid/A-split must succeed. Confirm rejected calls leave no new expense.
+   CLI identity simulation verifies the deployed handler; browser checks verify actual Clerk auth.
+   If exercising deleted-user references, use disposable fixtures only; do not delete live users.
+
+No product or schema decision is needed for this checkpoint. Commits 7–11, real build/Playwright,
+broader authorization fixes and integer-money migration remain outside this approved scope.
+Review these four new commits before pushing or continuing.
