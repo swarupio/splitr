@@ -13,7 +13,7 @@ Branch: `phase-b/safety-net`. Review checkpoint only: commits 4–11 have not st
 3. Registered all three background data queries as internalQuery and the existing email action as internalAction.
    Added a POST /inngest-bridge HTTP action with four explicit operations, strict Zod request validation,
    authentication before parsing/dispatch, 401 for missing/wrong credentials, no-store responses and generic failures.
-   Updated both Inngest jobs to call a server-only HTTP client using the same deployment's .convex.site domain.
+   Updated both Inngest jobs to call a server-only HTTP client using an explicitly configured .convex.site HTTP-action URL.
    Credentials are carried only in the Authorization header, never forwarded as Convex function arguments.
    Removed debt/profile and email-provider logging from the touched functions.
    Added .env.example with empty placeholders and a comment for each variable; exempted only that template from ignores.
@@ -66,7 +66,8 @@ was accepted from your instruction, not checked by reading settings or values.
 | Variable | Code/consumer | Location | Client-exposed? | Needed? |
 | --- | --- | --- | --- | --- |
 | NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY | app/layout.js | Vercel/local | Yes, intentionally public | Core auth |
-| NEXT_PUBLIC_CONVEX_URL | components/convex-client-provider.jsx; lib/inngest/bridge.ts | Vercel/local | Yes, public deployment URL | Core data and bridge |
+| NEXT_PUBLIC_CONVEX_URL | components/convex-client-provider.jsx | Vercel/local | Yes, public deployment URL | Core data |
+| CONVEX_HTTP_URL | lib/inngest/bridge.ts | Vercel/local | No; server-only | Background bridge HTTP-action URL (.convex.site) |
 | CLERK_JWT_ISSUER_DOMAIN | convex/auth.config.js | Convex | No | Core Clerk/Convex auth |
 | INNGEST_BRIDGE_SECRET | convex/lib/bridge_auth.ts; lib/inngest/bridge.ts | Convex and Vercel/local | No; server-only guard | Background bridge |
 | GEMINI_API_KEY | lib/inngest/spending-insights.js | Vercel/local | No; API-route import graph only | Optional legacy insights |
@@ -84,7 +85,7 @@ environment override supported by transitive dependencies.
 
 - Convex target deployment: CLERK_JWT_ISSUER_DOMAIN, INNGEST_BRIDGE_SECRET and RESEND_API_KEY (for email).
 - Vercel target environment: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_CONVEX_URL,
-  CLERK_SECRET_KEY, INNGEST_BRIDGE_SECRET and INNGEST_SIGNING_KEY.
+  CLERK_SECRET_KEY, CONVEX_HTTP_URL, INNGEST_BRIDGE_SECRET and INNGEST_SIGNING_KEY.
 - Use the identical bridge credential on the two sides for each environment. You already configured local/dev;
   configure the matching production/preview values separately when deploying there.
 - Set RESEND_API_KEY in each target Convex deployment, not just locally or in Vercel. You report it is set in dev.
@@ -112,3 +113,13 @@ The public seed, middleware defects and expense participant authorization are st
 UI, schema, React 18 and money calculations were preserved.
 
 Checkpoint validation: npm run check passed with 52 tests across five test files.
+
+## Bridge URL follow-up (before commit 4)
+
+The jobs previously derived the HTTP-action URL by replacing .convex.cloud in NEXT_PUBLIC_CONVEX_URL.
+They now require server-only CONVEX_HTTP_URL, set to the target deployment's HTTPS .convex.site URL.
+Copy the HTTP Actions URL from that deployment's Convex dashboard; do not use the client .convex.cloud URL.
+Set it in local server configuration and each matching Vercel preview/production environment.
+The server-only import, hosted-domain validation and redirect rejection remain in place.
+Two additional client cases cover missing explicit configuration and rejection of .convex.cloud;
+the existing URL-selection test now uses different public and HTTP deployment names.

@@ -11,15 +11,14 @@ export async function callInngestBridge<Operation extends BridgeOperation>(
   request: Extract<BridgeRequest, { operation: Operation }>,
 ): Promise<BridgeResponses[Operation]> {
   const secret = process.env.INNGEST_BRIDGE_SECRET;
-  const deploymentUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const httpUrl = process.env.CONVEX_HTTP_URL;
   if (!secret) throw new Error("Inngest bridge is not configured");
-  if (!deploymentUrl) throw new Error("Convex deployment URL is not configured");
+  if (!httpUrl) throw new Error("Convex HTTP URL is not configured");
 
-  const url = new URL(deploymentUrl);
-  if (url.protocol !== "https:" || !url.hostname.endsWith(".convex.cloud")) {
-    throw new Error("Inngest bridge requires a hosted Convex deployment URL");
+  const url = new URL(httpUrl);
+  if (url.protocol !== "https:" || !url.hostname.endsWith(".convex.site")) {
+    throw new Error("Inngest bridge requires a hosted Convex HTTP URL");
   }
-  url.hostname = url.hostname.replace(/\.convex\.cloud$/, ".convex.site");
   url.pathname = "/inngest-bridge";
   url.search = "";
   url.hash = "";

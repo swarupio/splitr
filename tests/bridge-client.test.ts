@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { callInngestBridge } from "../lib/inngest/bridge";
 
 beforeEach(() => {
+  vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Unexpected bridge request"));
   vi.stubEnv("INNGEST_BRIDGE_SECRET", "synthetic-test-bridge-credential");
-  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic-test.convex.cloud");
+  vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://different-deployment.convex.cloud");
+  vi.stubEnv("CONVEX_HTTP_URL", "https://synthetic-test.convex.site");
 });
 
 describe("server-side Inngest bridge client", () => {
@@ -28,14 +30,21 @@ describe("server-side Inngest bridge client", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it.each(["http://synthetic-test.convex.cloud", "https://example.test"])(
+  it.each(["http://synthetic-test.convex.site", "https://example.test", "https://synthetic-test.convex.cloud"])(
     "rejects unsupported deployment URLs (%#)", async (url) => {
-      vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", url);
+      vi.stubEnv("CONVEX_HTTP_URL", url);
       const fetchSpy = vi.spyOn(globalThis, "fetch");
-      await expect(callInngestBridge({ operation: "outstandingDebts" })).rejects.toThrow("hosted Convex");
+      await expect(callInngestBridge({ operation: "outstandingDebts" })).rejects.toThrow("Convex HTTP URL");
       expect(fetchSpy).not.toHaveBeenCalled();
     },
   );
+
+  it("requires explicit HTTP configuration even when the public deployment URL is set", async () => {
+    vi.stubEnv("CONVEX_HTTP_URL", "");
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    await expect(callInngestBridge({ operation: "outstandingDebts" })).rejects.toThrow("not configured");
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 
   it("does not reflect bridge error response bodies", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("untrusted detail", { status: 401 }));
