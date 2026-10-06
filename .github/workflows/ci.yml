@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Dummy test configuration. These are never deployment credentials.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_live_Y2xlcmsuZXhhbXBsZS50ZXN0JA=="
+      CLERK_SECRET_KEY: "sk_live_placeholder"
+      NEXT_PUBLIC_CONVEX_URL: "https://placeholder.convex.cloud"
+      CONVEX_HTTP_URL: "https://placeholder.convex.site"
+      INNGEST_BRIDGE_SECRET: "placeholder-for-tests-only"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Detect browser-test paths
+        id: browser
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          task_files=$(git diff --name-only --no-renames "$PR_BASE_SHA" "$PR_HEAD_SHA")
+          if grep -Eq '^(app|components|e2e)/' <<< "$task_files"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit and property tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        if: steps.browser.outputs.run == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Public-page smoke
+        if: steps.browser.outputs.run == 'true'
+        run: npm run test:e2e

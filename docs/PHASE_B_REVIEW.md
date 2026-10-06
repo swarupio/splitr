@@ -1,6 +1,6 @@
-# Phase B: commits 1–3 review
+# Phase B: commits 1-9 review
 
-Branch: `phase-b/safety-net`. Review checkpoint only: commits 4–11 have not started.
+Branch: `phase-b/safety-net`. Commits 1-6 and bridge/rename fixes were reviewed and pushed. This checkpoint covers commits 7-9; commits 10-11 await review.
 
 ## Changes
 
@@ -110,7 +110,8 @@ Provider results/errors are mocked.
 
 There remains one pre-existing ESLint warning in convex/auth.config.js (anonymous default export), with no lint errors.
 The dependency installation reported existing vulnerabilities; no broad npm audit fix or major update was applied.
-Build, Playwright, live deployment and dashboard configuration are deferred to later approved steps.
+Live deployment and dashboard configuration remain manual. Build and public-page Playwright
+verification for commits 7-9 are reported below.
 The public seed, middleware defects and expense participant authorization are still pending commits 4–6.
 UI, schema, React 18 and money calculations were preserved.
 
@@ -174,7 +175,7 @@ alone does not demonstrate successful debt forgery on a deployed backend.
 The money validation and insert block were compared verbatim with the previous commit.
 No calculations, validators, schema, existing expenses or other function implementations changed.
 
-## Current checkpoint validation
+## Earlier commits 1-6 checkpoint validation
 
 Post-commit npm run check totals: bridge follow-up 55, commit 4 57, commit 5 88, commit 6 107.
 Nine test files now run; 54 cases were added from this session's 53-case baseline:
@@ -185,7 +186,7 @@ email delivery or AI requests were performed. Tests use synthetic data and mocke
 Existing generated-file line-ending noise is left unstaged. During this session api.d.ts also
 gained the plain expense_creation helper module entry in the working tree; that is left unstaged
 under the no-function-change rule for commit 6. Only commit 4 includes the regenerated
-api.d.ts removal of the seed entry. No commits were amended and this checkpoint is not pushed.
+api.d.ts removal of the seed entry. No commits were amended; commits 1-6 were subsequently reviewed and pushed.
 
 ## Manual runtime verification after review
 
@@ -223,9 +224,8 @@ api.d.ts removal of the seed entry. No commits were amended and this checkpoint 
    CLI identity simulation verifies the deployed handler; browser checks verify actual Clerk auth.
    If exercising deleted-user references, use disposable fixtures only; do not delete live users.
 
-No product or schema decision is needed for this checkpoint. Commits 7�11, real build/Playwright,
-broader authorization fixes and integer-money migration remain outside this approved scope.
-Review these four new commits before pushing or continuing.
+The earlier commits 1-6 checkpoint was reviewed and pushed. Commits 7-9 are covered below;
+commits 10-11 await review. Broader authorization fixes and integer-money migration remain separate work.
 
 ## Commit 7: repository hygiene
 
@@ -258,3 +258,103 @@ Added one public landing-page Playwright smoke spec, run in Chromium at 360px an
 It checks status, title, heading, CTA and anchor navigation using dummy configuration.
 It does not verify real Clerk/Convex connectivity.
 README now documents npm-only commands, the deliberate two-terminal dev setup and incremental formatting.
+
+## Commit 9: pull-request CI
+
+.github/workflows/ci.yml runs npm ci, lint, typecheck, Vitest and npm run build for every PR.
+It uses pull_request (not pull_request_target), Node 24, read-only contents permission and no
+persisted checkout credential. It uses documented current official checkout/setup-node actions.
+A full-history git diff of the PR base/head SHAs detects app/, components/ or e2e/ changes;
+--no-renames ensures deletions and moves out of these paths also trigger browser checks.
+Only matching PRs install Chromium and run Playwright. No real application secrets are supplied.
+
+The build needs NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and NEXT_PUBLIC_CONVEX_URL because the root
+providers instantiate Clerk and Convex. CI also supplies CLERK_SECRET_KEY for the server
+middleware used by the smoke server. CONVEX_HTTP_URL and INNGEST_BRIDGE_SECRET are harmless
+test placeholders for matching server configuration; no bridge call is made during build/smoke.
+The public Clerk placeholder uses the production key format but encodes clerk.example.test,
+not a real instance. The fake secret is sk_live_placeholder. Production-shaped dummy keys avoid
+the SDK's development-browser handshake; no live credentials or authentication are used. API providers and live deployment configuration are not needed for these checks.
+CI and NEXT_TELEMETRY_DISABLED are tooling controls, not mandatory production application settings.
+The Inter font is downloaded by next/font/google during a fresh build, so the runner needs
+network access to Google's font endpoints as well as npm and Playwright downloads.
+
+Publisher references for the workflow and browser-server setup:
+
+- https://github.com/actions/checkout
+- https://github.com/actions/setup-node
+- https://playwright.dev/docs/test-webserver
+- https://playwright.dev/docs/ci-intro
+
+## Production configuration checklist (commits 1-9)
+
+Set these on the target **production Convex deployment**:
+
+- CLERK_JWT_ISSUER_DOMAIN: production Clerk JWT issuer.
+- INNGEST_BRIDGE_SECRET: server-only bridge credential, identical to Vercel's value for this deployment.
+- RESEND_API_KEY: required if the retained email action/jobs are enabled.
+
+Set these in the matching **Vercel Production environment**:
+
+- NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: production Clerk publishable key.
+- CLERK_SECRET_KEY: production Clerk server key.
+- NEXT_PUBLIC_CONVEX_URL: production Convex .convex.cloud client URL.
+- CONVEX_HTTP_URL: that same deployment's .convex.site HTTP Actions URL, server-only.
+- INNGEST_BRIDGE_SECRET: identical to the production Convex bridge credential.
+- INNGEST_SIGNING_KEY: production Inngest request verification key.
+- GEMINI_API_KEY: required if the retained monthly AI insights job is enabled.
+- INNGEST_EVENT_KEY: optional; needed only if event publishing is enabled (not currently used).
+- NEXT_TELEMETRY_DISABLED: optional; set 1 if desired.
+
+CONVEX_DEPLOYMENT is local CLI configuration, not a production runtime variable.
+If choosing a Vercel build command that also runs convex deploy, supply that deployment's
+CONVEX_DEPLOY_KEY separately to the deploy tool; this CI/build command does not deploy Convex
+and does not require it. Publish Convex separately with the supported CLI/dashboard workflow.
+Use corresponding Preview/local settings for their own deployments; never point dummy CI values
+at production. Production Resend delivery to other users still requires a verified sender domain;
+the current onboarding@resend.dev sender is restricted and was not changed in this session.
+
+## Manual checks after the commit 9 review
+
+1. Review the three new commits, then push/open the PR. Confirm the GitHub Actions install,
+   lint, typecheck, tests and build steps are green. This PR touches app/components/e2e, so the
+   Chromium install and both smoke viewport runs must also execute.
+2. On a later docs-only PR, confirm build/checks still run while the two browser steps skip.
+   CI is not claimed green until GitHub has actually run it.
+3. Use the documented two-terminal development setup. Confirm npx convex dev still publishes
+   successfully, and Next serves landing/sign-in plus the authenticated dashboard.
+4. At 360px and desktop, inspect the landing anchor link, dashboard groups, participant/group
+   selectors and settlement list/form. Confirm their rendered behavior matches before cleanup.
+   Confirm the browser console no longer logs settlement contents.
+5. Confirm .clerk and local environment files remain ignored. Use git diff after your local
+   Convex watcher runs; generated bindings should not be included in this checkpoint.
+6. Apply the production settings above when deploying, then perform the real Clerk/Convex,
+   bridge authentication and expense-denial checks in the earlier manual section.
+7. Stop here. Next.js advisory evaluation/15.5-only patch and the selected-pair settlement
+   reproduction/fix are commits 10-11 and have not been started.
+
+The initial smoke verification found two test-configuration issues: Clerk rewrites to localhost,
+so the server and browser now both use localhost; test-shaped Clerk keys force a development-browser
+handshake to the fake domain. The installed SDK was checked with network calls blocked:
+fake test-format keys returned dev-browser-missing handshake, while fake production-format keys
+returned signed-out. CI and smoke builds now use the latter format, still with the reserved
+example.test host and placeholder secret. No production middleware/auth logic was bypassed.
+
+## Commits 7-9 verification results and checkpoint
+
+- npm run check passed after commit 7 with 107 tests and after commit 8 with 109 tests;
+  commit 9 verification uses the same 109 tests across ten files.
+- Two new property cases generate 200 deterministic examples; no money logic was added.
+- One public-page smoke spec passed both mobile (360x800) and desktop (1280x800) Chromium runs.
+- npm run build passed locally on Next 15.5.9 / React 18.3.1 / Node 24.14.0.
+  Build and browser verification ran in a temporary tracked-source copy with node_modules linked,
+  no .env files, no .clerk directory, no untracked local configuration and only dummy settings.
+  The build warned about the existing unsupported reactCompiler option. The temporary copy also
+  warned about parent lockfile workspace-root inference; neither warning stopped the build.
+- Touched-file format:check passed. Prettier 3.9.9, fast-check 4.10.2 and Playwright 1.63.0
+  are development dependencies; Next and React versions were unchanged.
+- No generated Convex files were staged in commits 7-9. No live Convex deployment or real
+  Clerk, Inngest, AI or email operation was invoked. No environment-file contents were read.
+- Existing Convex auth.config.js still has one lint warning and no lint errors.
+- GitHub Actions itself remains unverified until the reviewed commits are pushed and a PR runs.
+  This checkpoint is local/unpushed. Commits 10-11 are deliberately deferred for review.

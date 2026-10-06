@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-const baseURL = "http://127.0.0.1:3100";
+const baseURL = "http://localhost:3100";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -20,13 +20,13 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run start -- --hostname 127.0.0.1 --port 3100",
+    command: "npm run start -- --hostname localhost --port 3100",
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000,
     env: {
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2xlcmsuZXhhbXBsZS50ZXN0JA==",
-      CLERK_SECRET_KEY: "sk_test_placeholder",
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_live_Y2xlcmsuZXhhbXBsZS50ZXN0JA==",
+      CLERK_SECRET_KEY: "sk_live_placeholder",
       NEXT_PUBLIC_CONVEX_URL: "https://placeholder.convex.cloud",
       CONVEX_HTTP_URL: "https://placeholder.convex.site",
       INNGEST_BRIDGE_SECRET: "placeholder-for-tests-only",
