@@ -134,3 +134,20 @@ Regenerated api.d.ts offline using the installed Convex API template; only the r
 and module entry are staged. Existing generated JavaScript/data-model/server line-ending noise is excluded.
 Run npx convex dev after review, then npx convex run seed:seedDatabase '{}' must report a missing function.
 The mock proves local removal, not that the old deployed function disappears before publishing.
+
+## Commit 5: middleware protection
+
+Renamed middleware.js to middleware.ts and fixed the base-route matching and redirect invocation.
+All six existing protected route families match their exact root and slash-delimited nested paths;
+similar public prefixes are not accidentally protected. Public routes continue through.
+31 tests use the installed Clerk route matcher with synthetic authentication:
+12 anonymous redirects, 12 authenticated passes, and seven public-route passes.
+All 12 anonymous cases failed before the fix. Redirect tests assert the actual returned Response.
+
+Browser verification after starting Next: in a signed-out/private window, navigate directly to
+/dashboard, /contacts, /dashboard/nested/detail and /contacts/nested/detail. Each must redirect to
+Clerk sign-in rather than leave a blank shell. Also check /expenses/new and a real group URL.
+The landing, sign-in and sign-up pages must remain accessible. Sign in and confirm dashboard and
+contacts load normally, then open a valid nested group route. Repeat at 360px and desktop.
+Nested dashboard/contacts example paths have no pages today; after sign-in they may correctly show 404.
+The tests mock authentication, so real Clerk cookie handling and return navigation still need this check.
