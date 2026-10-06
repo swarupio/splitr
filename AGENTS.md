@@ -20,7 +20,8 @@ Before adding any dependency: check whether the stack already does it. Justify n
 
 ## Commands
 ```
-npm run dev         # next dev + convex dev
+npm run dev         # Next.js only
+npx convex dev      # Convex in a second terminal
 npm run lint        # eslint
 npm run typecheck   # tsc --noEmit
 npm test            # vitest run
