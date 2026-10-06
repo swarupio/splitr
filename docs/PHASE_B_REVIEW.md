@@ -1,6 +1,6 @@
-# Phase B: commits 1-9 review
+# Phase B: commits 1-11 review
 
-Branch: `phase-b/safety-net`. Commits 1-6 and bridge/rename fixes were reviewed and pushed. This checkpoint covers commits 7-9; commits 10-11 await review.
+Branch: phase-b/safety-net. Commits 1-9 and bridge/rename fixes were reviewed and pushed. Commits 10-11 are the current review checkpoint.
 
 ## Changes
 
@@ -358,3 +358,23 @@ example.test host and placeholder secret. No production middleware/auth logic wa
 - Existing Convex auth.config.js still has one lint warning and no lint errors.
 - GitHub Actions itself remains unverified until the reviewed commits are pushed and a PR runs.
   This checkpoint is local/unpushed. Commits 10-11 are deliberately deferred for review.
+
+## Commit 10: conditional Next.js security patch
+
+Upgraded Next.js from 15.5.9 to exactly 15.5.27, the official September 30, 2026
+maintenance security release. React and React DOM remain 18.3.1. Only Next.js and
+its required transitive packages are updated; no broad dependency update or audit fix.
+
+The installed version falls in the affected range of the official
+[dynamic route middleware bypass advisory](https://github.com/vercel/next.js/security/advisories/GHSA-492v-c6pp-mqqv),
+which is fixed starting in 15.5.16. Splitr uses middleware to protect nested dynamic routes,
+so the advisory is relevant; this is an applicability assessment, not an exploit reproduction.
+The [official September release](https://nextjs.org/blog/september-2026-security-release)
+provides the later cumulative patch, 15.5.27. No Next 16 or React upgrade is included.
+
+Validation uses the same isolated tracked-source copy and dummy settings described above,
+without copying environment files, .clerk or local configuration. npm run check passed with 109 tests across ten files. npm run build passed on
+Next 15.5.27; the existing reactCompiler and temporary-copy workspace-root warnings remain.
+The public-page smoke spec passed both Chromium runs (360x800 and 1280x800).
+The required post-commit check uses the same suite. No Convex functions were added or
+removed, and no generated bindings are staged.
