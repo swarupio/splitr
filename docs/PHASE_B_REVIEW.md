@@ -123,3 +123,14 @@ Set it in local server configuration and each matching Vercel preview/production
 The server-only import, hosted-domain validation and redirect rejection remain in place.
 Two additional client cases cover missing explicit configuration and rejection of .convex.cloud;
 the existing URL-selection test now uses different public and HTTP deployment names.
+
+## Commit 4: remove public seeding
+
+Deleted convex/seed.js, with no replacement endpoint and no live data deletion.
+Two regression cases invoke seed:seedDatabase by its old function name, both anonymously and
+with a registered identity, assert the module is missing, and verify no expenses, groups or settlements
+were written. They failed against the old mutation, which created synthetic debts for existing users.
+Regenerated api.d.ts offline using the installed Convex API template; only the removed seed import
+and module entry are staged. Existing generated JavaScript/data-model/server line-ending noise is excluded.
+Run npx convex dev after review, then npx convex run seed:seedDatabase '{}' must report a missing function.
+The mock proves local removal, not that the old deployed function disappears before publishing.

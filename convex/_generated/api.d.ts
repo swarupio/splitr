@@ -22,7 +22,6 @@ import type * as http from "../http.js";
 import type * as inngest from "../inngest.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bridge_auth from "../lib/bridge_auth.js";
-import type * as seed from "../seed.js";
 import type * as settlements from "../settlements.js";
 import type * as users from "../users.js";
 
@@ -44,7 +43,6 @@ declare const fullApi: ApiFromModules<{
   inngest: typeof inngest;
   "lib/auth": typeof lib_auth;
   "lib/bridge_auth": typeof lib_bridge_auth;
-  seed: typeof seed;
   settlements: typeof settlements;
   users: typeof users;
 }>;
