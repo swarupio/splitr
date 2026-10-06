@@ -17,7 +17,7 @@ import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as inngest from "../inngest.js";
 import type * as lib_auth from "../lib/auth.js";
-import type * as lib_bridge_auth from "../lib/bridge-auth.js";
+import type * as lib_bridge_auth from "../lib/bridge_auth.js";
 import type * as seed from "../seed.js";
 import type * as settlements from "../settlements.js";
 import type * as users from "../users.js";
@@ -39,7 +39,7 @@ import type * as users from "../users.js";
 "http": typeof http,
 "inngest": typeof inngest,
 "lib/auth": typeof lib_auth,
-"lib/bridge-auth": typeof lib_bridge_auth,
+"lib/bridge_auth": typeof lib_bridge_auth,
 "seed": typeof seed,
 "settlements": typeof settlements,
 "users": typeof users,

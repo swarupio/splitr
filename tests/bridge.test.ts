@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as queries from "../convex/inngest";
 import { sendEmail } from "../convex/email";
 import { internal } from "../convex/_generated/api";
-import { hasBridgeAuthorization } from "../convex/lib/bridge-auth";
+import { hasBridgeAuthorization } from "../convex/lib/bridge_auth";
 import { createTestBackend } from "./convex.setup";
 
 const credential = "synthetic-test-bridge-credential";

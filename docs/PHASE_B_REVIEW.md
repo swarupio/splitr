@@ -68,7 +68,7 @@ was accepted from your instruction, not checked by reading settings or values.
 | NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY | app/layout.js | Vercel/local | Yes, intentionally public | Core auth |
 | NEXT_PUBLIC_CONVEX_URL | components/convex-client-provider.jsx; lib/inngest/bridge.ts | Vercel/local | Yes, public deployment URL | Core data and bridge |
 | CLERK_JWT_ISSUER_DOMAIN | convex/auth.config.js | Convex | No | Core Clerk/Convex auth |
-| INNGEST_BRIDGE_SECRET | convex/lib/bridge-auth.ts; lib/inngest/bridge.ts | Convex and Vercel/local | No; server-only guard | Background bridge |
+| INNGEST_BRIDGE_SECRET | convex/lib/bridge_auth.ts; lib/inngest/bridge.ts | Convex and Vercel/local | No; server-only guard | Background bridge |
 | GEMINI_API_KEY | lib/inngest/spending-insights.js | Vercel/local | No; API-route import graph only | Optional legacy insights |
 | RESEND_API_KEY | convex/email.ts | Convex only | No; not accepted in bridge payloads | Required for email sending; configured in dev per user |
 | CLERK_SECRET_KEY | Clerk SDK, implicit | Vercel/local | No | Core server auth |

@@ -3,7 +3,7 @@ import { bridgeRequestSchema } from "../lib/inngest/bridge-contract";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { httpAction } from "./_generated/server";
-import { hasBridgeAuthorization } from "./lib/bridge-auth";
+import { hasBridgeAuthorization } from "./lib/bridge_auth";
 
 function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), {
