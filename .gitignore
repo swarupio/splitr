@@ -45,3 +45,7 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Browser test artifacts
+/playwright-report/
+/test-results/

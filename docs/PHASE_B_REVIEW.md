@@ -224,3 +224,21 @@ api.d.ts removal of the seed entry. No commits were amended and this checkpoint 
 No product or schema decision is needed for this checkpoint. Commits 7–11, real build/Playwright,
 broader authorization fixes and integer-money migration remain outside this approved scope.
 Review these four new commits before pushing or continuing.
+
+## Commit 7: repository hygiene
+
+Added the minimal .gitattributes rule '* text=auto eol=lf'; no renormalization was run.
+.gitignore now covers browser-test output as well as environment files, Next output, dependencies,
+coverage and Clerk config. Only .env.example is exempted from environment ignores.
+The example was replaced from a known 11-variable, empty-value template without reading any
+existing .env file. Each comment states where the variable belongs; source env reads were compared
+against the template names, with Clerk/Inngest SDK and Convex CLI variables included.
+
+Search-confirmed removals: unused components/ui/sonner.jsx; direct dependencies @clerk/backend,
+@clerk/themes, @google/genai, @radix-ui/react-scroll-area, dotenv, ingest, svix and next-themes;
+commented GroupList/deleteGroup implementations; dashboard useMutation/Trash2/toast/CreditCard;
+SettlementList useState/Link; ParticipantSelector useUser; unused settlement paymentType watch;
+unreachable GroupSelector loading branch; SettlementList debug logging of payment data.
+The active Sonner toaster and legacy GoogleGenerativeAI job remain. Clerk dependencies that are
+still needed transitively remain installed. Assets with uncertain external use remain untouched.
+No Convex function was added or removed, and no generated files were staged.

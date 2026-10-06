@@ -3,10 +3,6 @@
 import { api } from "@/convex/_generated/api";
 import { useConvexQuery } from "@/hooks/use-convex-query";
 import { BarLoader } from "react-spinners";
-import { useMutation } from "convex/react";
-import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
-// Ensure api is imported: import { api } from "@/convex/_generated/api";
 import {
   Card,
   CardContent,
@@ -15,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, CreditCard, ChevronRight } from "lucide-react";
+import { PlusCircle, Users, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ExpenseSummary } from "./components/expense-summary";
 import { BalanceSummary } from "./components/balance-summary";

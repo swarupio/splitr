@@ -45,9 +45,6 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     },
   });
 
-  // Get selected payment direction
-  const paymentType = watch("paymentType");
-
   // Single user settlement
   const handleUserSettlement = async (data) => {
     const amount = parseFloat(data.amount);

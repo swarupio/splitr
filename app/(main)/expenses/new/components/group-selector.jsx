@@ -68,11 +68,7 @@ export function GroupSelector({ onChange }) {
         </SelectContent>
       </Select>
 
-      {isLoading && selectedGroupId && (
-        <div className="mt-2">
-          <BarLoader width={"100%"} color="#36d7b7" />
-        </div>
-      )}
+
     </div>
   );
 }
